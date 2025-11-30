@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ASU Parking System</title>
+  
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #000;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: #1a1a1a;
+      border-radius: 15px;
+      box-shadow: 0 20px 60px rgba(255, 215, 0, 0.3);
+      overflow: hidden;
+      border: 2px solid #FFD700;
+    }
+
+    header {
+      background: linear-gradient(135deg, #000 0%, #1a1a1a 100%);
+      color: #FFD700;
+      padding: 30px;
+      text-align: center;
+      border-bottom: 3px solid #FFD700;
+    }
+
+    header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+    }
+
+    header p {
+      font-size: 1.1rem;
+      opacity: 0.9;
+      color: #FFD700;
+    }
+
+    .logout-btn {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      background: #FFD700;
+      color: #000;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .logout-btn:hover {
+      background: #FFA500;
+      transform: scale(1.05);
+    }
+
+    /* Login Page Styles */
+    .login-container {
+      max-width: 450px;
+      margin: 100px auto;
+      background: #1a1a1a;
+      padding: 40px;
+      border-radius: 15px;
+      box-shadow: 0 20px 60px rgba(255, 215, 0, 0.3);
+      border: 2px solid #FFD700;
+    }
+
+    .login-container h1 {
+      color: #FFD700;
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 2rem;
+      text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+    }
+
+    .login-form .form-group {
+      margin-bottom: 20px;
+    }
+
+    .login-form label {
+      display: block;
+      color: #FFD700;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .login-form input {
+      width: 100%;
+      padding: 12px;
+      background: #000;
+      border: 2px solid #FFD700;
+      border-radius: 5px;
+      color: #FFD700;
+      font-size: 1rem;
+    }
+
+    .login-form input:focus {
+      outline: none;
+      border-color: #FFA500;
+      box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+    }
+
+    .login-form input::placeholder {
+      color: #666;
+    }
+
+    .main-content {
+      padding: 30px;
+    }
+
+    .panel {
+      background: #000;
+      border-radius: 10px;
+      padding: 25px;
+      box-shadow: 0 2px 10px rgba(255, 215, 0, 0.2);
+      border: 2px solid #FFD700;
+      margin-bottom: 20px;
+    }
+
+    .panel h2 {
+      color: #FFD700;
+      margin-bottom: 20px;
+      font-size: 1.8rem;
+      border-bottom: 3px solid #FFD700;
+      padding-bottom: 10px;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 600;
+      color: #FFD700;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 10px;
+      background: #1a1a1a;
+      border: 2px solid #FFD700;
+      border-radius: 5px;
+      font-size: 1rem;
+      color: #FFD700;
+      transition: border-color 0.3s;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: #FFA500;
+      box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+    }
+
+    .form-group input::placeholder {
+      color: #666;
+    }
+
+    .btn {
+      background: #FFD700;
+      color: #000;
+      border: none;
+      padding: 12px 25px;
+      border-radius: 5px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-weight: 600;
+    }
+
+    .btn:hover {
+      background: #FFA500;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn-danger {
+      background: #CC0000;
+      color: #FFD700;
+      margin-left: 10px;
+    }
+
+    .btn-danger:hover {
+      background: #FF0000;
+    }
+
+    .btn-success {
+      background: #FFD700;
+      color: #000;
+      margin-top: 15px;
+      width: 100%;
+    }
+
+    .btn-nav {
+      background: #FFD700;
+      color: #000;
+      padding: 8px 15px;
+      font-size: 0.9rem;
+      margin-top: 10px;
+    }
+
+    #map {
+      height: 500px;
+      width: 100%;
+      border-radius: 10px;
+      margin-top: 20px;
+      box-shadow: 0 2px 10px rgba(255, 215, 0, 0.2);
+      border: 2px solid #FFD700;
+    }
+
+    .parking-list {
+      margin-top: 20px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .parking-item {
+      background: #1a1a1a;
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      border: 1px solid #FFD700;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.3s;
+    }
+
+    .parking-item:hover {
+      transform: translateX(5px);
+      box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+    }
+
+    .parking-info {
+      flex: 1;
+    }
+
+    .parking-info h3 {
+      color: #FFD700;
+      margin-bottom: 5px;
+    }
+
+    .parking-info p {
+      color: #FFA500;
+      font-size: 0.9rem;
+    }
+
+    .parking-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-small {
+      padding: 8px 15px;
+      font-size: 0.85rem;
+    }
+
+    .message {
+      padding: 15px;
+      border-radius: 5px;
+      margin-top: 15px;
+      font-weight: 500;
+    }
+
+    .message-error {
+      background: #330000;
+      color: #FF6B6B;
+      border-left: 4px solid #FF0000;
+    }
+
+    .message-success {
+      background: #1a1a00;
+      color: #FFD700;
+      border-left: 4px solid #FFD700;
+    }
+
+    .message-info {
+      background: #1a1a00;
+      color: #FFA500;
+      border-left: 4px solid #FFA500;
+    }
+
+    .closest-parkings {
+      margin-top: 20px;
+    }
+
+    .closest-parking-item {
+      background: #1a1a1a;
+      padding: 20px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      border: 2px solid #FFD700;
+      box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
+    }
+
+    .closest-parking-item h3 {
+      color: #FFD700;
+      margin-bottom: 10px;
+      font-size: 1.3rem;
+    }
+
+    .closest-parking-item .distance {
+      font-size: 1.5rem;
+      color: #FFD700;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+
+    .closest-parking-item .coords {
+      color: #FFA500;
+      font-size: 0.9rem;
+      margin-bottom: 10px;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 10px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #000;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #FFD700;
+      border-radius: 5px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #FFA500;
+    }
+  </style>
+</head>
+<body>
+  <!-- Login Page -->
+  <div id="loginPage">
+    <div class="login-container">
+      <h1>🅰🆂🆄 Parking System</h1>
+      <div id="loginForm" class="login-form">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input type="text" id="username" placeholder="Enter username">
+        </div>
+        
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" placeholder="Enter password">
+        </div>
+        
+        <button id="loginBtn" class="btn" style="width: 100%;">Login</button>
+        <div id="loginMessage"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Page -->
+  <div id="adminPage" class="hidden">
+    <div class="container">
+      <header style="position: relative;">
+        <h1>🅰🆂🆄 Parking - Admin Panel</h1>
+        <p>Manage parking locations</p>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+      </header>
+
+      <div class="main-content">
+        <div class="panel">
+          <h2>🔧 Add New Parking</h2>
+          
+          <div id="addParkingForm">
+            <div class="form-group">
+              <label for="parkingName">Parking Name *</label>
+              <input type="text" id="parkingName" placeholder="e.g., ASU Gate 4 Parking">
+            </div>
+            
+            <div class="form-group">
+              <label for="latitude">Latitude *</label>
+              <input type="number" id="latitude" step="any" placeholder="e.g., 30.0444">
+            </div>
+            
+            <div class="form-group">
+              <label for="longitude">Longitude *</label>
+              <input type="number" id="longitude" step="any" placeholder="e.g., 31.2357">
+            </div>
+            
+            <div class="form-group">
+              <label for="price">Price per Hour (optional)</label>
+              <input type="text" id="price" placeholder="e.g., 20 EGP/hour">
+            </div>
+            
+            <div class="form-group">
+              <label for="description">Description (optional)</label>
+              <input type="text" id="description" placeholder="e.g., Covered parking with 24/7 security">
+            </div>
+            
+            <button id="addParkingBtn" class="btn">➕ Add Parking</button>
+            <button type="button" id="resetBtn" class="btn btn-danger">🗑️ Reset All</button>
+          </div>
+
+          <div id="adminMessage"></div>
+        </div>
+
+        <div class="panel">
+          <h2>📋 Current Parkings</h2>
+          <div class="parking-list" id="parkingList"></div>
+        </div>
+
+        <div class="panel">
+          <h2>🗺️ Map View</h2>
+          <div id="adminMap"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- User Page -->
+  <div id="userPage" class="hidden">
+    <div class="container">
+      <header style="position: relative;">
+        <h1>🅰🆂🆄 Parking Finder</h1>
+        <p>Find your nearest parking spot</p>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+      </header>
+
+      <div class="main-content">
+        <div class="panel">
+          <h2>📍 Find Parking</h2>
+          
+          <button id="findClosestBtn" class="btn btn-success">
+            📡 Use My Location & Find Closest Parkings
+          </button>
+
+          <div style="margin-top: 20px; padding: 15px; background: #1a1a1a; border: 2px solid #FFD700; border-radius: 8px;">
+            <h3 style="color: #FFD700; margin-bottom: 10px;">Or Enter Your Location Manually:</h3>
+            <div class="form-group">
+              <label for="userLat">Your Latitude</label>
+              <input type="number" id="userLat" step="any" placeholder="e.g., 30.0444">
+            </div>
+            <div class="form-group">
+              <label for="userLon">Your Longitude</label>
+              <input type="number" id="userLon" step="any" placeholder="e.g., 31.2357">
+            </div>
+            <button id="manualLocationBtn" class="btn btn-success">
+              🎯 Find Closest Parkings
+            </button>
+          </div>
+
+          <div id="userMessage"></div>
+
+          <div id="closestParkings" class="closest-parkings"></div>
+        </div>
+
+        <div class="panel">
+          <h2>🗺️ Map View</h2>
+          <div id="userMap"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+
+  <script>
+    // ========================================
+    // USER CREDENTIALS
+    // ========================================
+    const users = {
+      'ahmed waleed': { password: '1010', role: 'user' },
+      'welo': { password: '10101010', role: 'admin' }
+    };
+
+    // ========================================
+    // DATA STORAGE
+    // ========================================
+    let parkings = [];
+    let adminMap, userMap;
+    let adminParkingMarkers = [];
+    let userParkingMarkers = [];
+    let userMarker = null;
+    let userLocation = null;
+    let currentUser = null;
+
+    // ========================================
+    // LOGIN SYSTEM
+    // ========================================
+    function handleLogin() {
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+
+      console.log('Login attempt:', username, password);
+
+      if (users[username] && users[username].password === password) {
+        currentUser = { username, role: users[username].role };
+        
+        console.log('Login successful:', currentUser);
+        
+        // Hide login, show appropriate page
+        document.getElementById('loginPage').classList.add('hidden');
+        
+        if (currentUser.role === 'admin') {
+          document.getElementById('adminPage').classList.remove('hidden');
+          setTimeout(initAdminMap, 100);
+        } else {
+          document.getElementById('userPage').classList.remove('hidden');
+          setTimeout(initUserMap, 100);
+        }
+        
+        loadParkingsFromStorage();
+      } else {
+        console.log('Login failed');
+        showMessage('loginMessage', '❌ Invalid username or password', 'error');
+      }
+    }
+    
+    document.getElementById('loginBtn').addEventListener('click', handleLogin);
+    
+    // Allow Enter key to submit login
+    document.getElementById('password').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        handleLogin();
+      }
+    });
+
+    function logout() {
+      currentUser = null;
+      document.getElementById('loginPage').classList.remove('hidden');
+      document.getElementById('adminPage').classList.add('hidden');
+      document.getElementById('userPage').classList.add('hidden');
+      document.getElementById('username').value = '';
+      document.getElementById('password').value = '';
+    }
+
+    // ========================================
+    // INITIALIZE MAPS
+    // ========================================
+    function initAdminMap() {
+      if (adminMap) return;
+      try {
+        adminMap = L.map('adminMap').setView([30.0444, 31.2357], 12);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© OpenStreetMap contributors',
+          maxZoom: 19
+        }).addTo(adminMap);
+      } catch(e) {
+        console.error('Admin map init error:', e);
+      }
+    }
+
+    function initUserMap() {
+      if (userMap) return;
+      try {
+        userMap = L.map('userMap').setView([30.0444, 31.2357], 12);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© OpenStreetMap contributors',
+          maxZoom: 19
+        }).addTo(userMap);
+      } catch(e) {
+        console.error('User map init error:', e);
+      }
+    }
+
+    // ========================================
+    // HAVERSINE DISTANCE FORMULA
+    // ========================================
+    function getDistanceInKm(lat1, lon1, lat2, lon2) {
+      const R = 6371;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      
+      const a = 
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+      
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return R * c;
+    }
+
+    // ========================================
+    // LOCAL STORAGE
+    // ========================================
+    function saveParkingsToStorage() {
+      localStorage.setItem('asuParkings', JSON.stringify(parkings));
+    }
+
+    function loadParkingsFromStorage() {
+      const stored = localStorage.getItem('asuParkings');
+      if (stored) {
+        parkings = JSON.parse(stored);
+        if (currentUser.role === 'admin') {
+          updateParkingList();
+          updateAdminMapMarkers();
+        } else {
+          updateUserMapMarkers();
+        }
+      }
+    }
+
+    // ========================================
+    // ADD PARKING (ADMIN ONLY)
+    // ========================================
+    function addParking(name, lat, lon, price, description) {
+      if (isNaN(lat) || isNaN(lon)) {
+        showMessage('adminMessage', 'Invalid coordinates. Please enter valid numbers.', 'error');
+        return false;
+      }
+
+      if (lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+        showMessage('adminMessage', 'Invalid coordinate range.', 'error');
+        return false;
+      }
+
+      const parking = {
+        id: Date.now(),
+        name: name,
+        lat: parseFloat(lat),
+        lon: parseFloat(lon),
+        price: price || 'N/A',
+        description: description || 'No description'
+      };
+
+      parkings.push(parking);
+      saveParkingsToStorage();
+      updateParkingList();
+      updateAdminMapMarkers();
+
+      showMessage('adminMessage', `✅ Parking "${name}" added successfully!`, 'success');
+      return true;
+    }
+
+    // ========================================
+    // UPDATE PARKING LIST (ADMIN)
+    // ========================================
+    function updateParkingList() {
+      const listContainer = document.getElementById('parkingList');
+      
+      if (parkings.length === 0) {
+        listContainer.innerHTML = `
+          <div class="empty-state">
+            <p>No parkings added yet. Use the form above to add one!</p>
+          </div>
+        `;
+        return;
+      }
+
+      listContainer.innerHTML = parkings.map(parking => `
+        <div class="parking-item">
+          <div class="parking-info">
+            <h3>${parking.name}</h3>
+            <p>📍 Lat: ${parking.lat.toFixed(4)}, Lon: ${parking.lon.toFixed(4)}</p>
+            <p>💰 ${parking.price}</p>
+          </div>
+          <div class="parking-actions">
+            <button class="btn btn-small" onclick="centerAdminMapOnParking(${parking.id})">
+              🗺️ Center
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // ========================================
+    // UPDATE MAP MARKERS
+    // ========================================
+    function updateAdminMapMarkers() {
+      if (!adminMap) return;
+      adminParkingMarkers.forEach(marker => adminMap.removeLayer(marker));
+      adminParkingMarkers = [];
+
+      parkings.forEach(parking => {
+        const marker = L.marker([parking.lat, parking.lon], {
+          icon: L.icon({
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-gold.png',
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
+          })
+        }).addTo(adminMap);
+
+        marker.bindPopup(`
+          <strong>${parking.name}</strong><br>
+          📍 ${parking.lat.toFixed(4)}, ${parking.lon.toFixed(4)}<br>
+          💰 ${parking.price}<br>
+          📝 ${parking.description}
+        `);
+
+        adminParkingMarkers.push(marker);
+      });
+    }
+
+    function updateUserMapMarkers() {
+      if (!userMap) return;
+      userParkingMarkers.forEach(marker => userMap.removeLayer(marker));
+      userParkingMarkers = [];
+
+      parkings.forEach(parking => {
+        const marker = L.marker([parking.lat, parking.lon], {
+          icon: L.icon({
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-gold.png',
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
+          })
+        }).addTo(userMap);
+
+        marker.bindPopup(`
+          <strong>${parking.name}</strong><br>
+          📍 ${parking.lat.toFixed(4)}, ${parking.lon.toFixed(4)}<br>
+          💰 ${parking.price}<br>
+          📝 ${parking.description}
+        `);
+
+        userParkingMarkers.push(marker);
+      });
+    }
+
+    // ========================================
+    // CENTER MAP ON PARKING
+    // ========================================
+    function centerAdminMapOnParking(parkingId) {
+      const parking = parkings.find(p => p.id === parkingId);
+      if (parking && adminMap) {
+        adminMap.setView([parking.lat, parking.lon], 15);
+        const markerIndex = parkings.indexOf(parking);
+        if (adminParkingMarkers[markerIndex]) {
+          adminParkingMarkers[markerIndex].openPopup();
+        }
+      }
+    }
+
+    // ========================================
+    // RESET PARKINGS
+    // ========================================
+    function resetAllParkings() {
+      if (confirm('Are you sure you want to delete all parkings?')) {
+        parkings = [];
+        saveParkingsToStorage();
+        updateParkingList();
+        updateAdminMapMarkers();
+        showMessage('adminMessage', '🗑️ All parkings have been reset.', 'info');
+      }
+    }
+
+    // ========================================
+    // FIND CLOSEST PARKINGS (USER)
+    // ========================================
+    function findClosestParkings() {
+      if (parkings.length === 0) {
+        showMessage('userMessage', '⚠️ No parkings available. Please contact admin to add parkings first.', 'info');
+        return;
+      }
+
+      if (!navigator.geolocation) {
+        showMessage('userMessage', '❌ Geolocation is not supported by your browser. Please use manual location entry below.', 'error');
+        return;
+      }
+
+      showMessage('userMessage', '📡 Requesting your location... Please allow location access when prompted.', 'info');
+
+      const options = {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      };
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          processUserLocation(position.coords.latitude, position.coords.longitude);
+        },
+        (error) => {
+          let errorMsg = '❌ Location Error: ';
+          switch(error.code) {
+            case error.PERMISSION_DENIED:
+              errorMsg += '<strong>Permission Denied!</strong><br><br>';
+              errorMsg += '⚠️ <strong>Note:</strong> Location services may not work inside Claude\'s artifact viewer due to security restrictions.<br><br>';
+              errorMsg += '✅ <strong>Solution:</strong> Please use the <strong>"Manual Location Entry"</strong> below, or:<br>';
+              errorMsg += '1. Copy this HTML code<br>';
+              errorMsg += '2. Save it as a .html file on your computer<br>';
+              errorMsg += '3. Open it directly in your browser<br><br>';
+              errorMsg += '💡 For testing, use these Cairo coordinates:<br>';
+              errorMsg += '• Latitude: <strong>30.0444</strong><br>';
+              errorMsg += '• Longitude: <strong>31.2357</strong>';
+              break;
+            case error.POSITION_UNAVAILABLE:
+              errorMsg += 'Location information is unavailable. Please use manual entry below.';
+              break;
+            case error.TIMEOUT:
+              errorMsg += 'Location request timed out. Please try manual entry below.';
+              break;
+            default:
+              errorMsg += 'An unknown error occurred. Please use manual entry below.';
+          }
+          showMessage('userMessage', errorMsg, 'error');
+        },
+        options
+      );
+    }
+
+    // Process location (used by both automatic and manual entry)
+    function processUserLocation(lat, lon) {
+      userLocation = { lat, lon };
+
+      if (userMarker) {
+        userMap.removeLayer(userMarker);
+      }
+
+      userMarker = L.marker([lat, lon], {
+        icon: L.icon({
+          iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+          shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+          iconSize: [25, 41],
+          iconAnchor: [12, 41],
+          popupAnchor: [1, -34],
+          shadowSize: [41, 41]
+        })
+      }).addTo(userMap);
+
+      userMarker.bindPopup('<strong>📍 Your Location</strong>').openPopup();
+      userMap.setView([lat, lon], 13);
+
+      const parkingsWithDistance = parkings.map(parking => {
+        const distance = getDistanceInKm(lat, lon, parking.lat, parking.lon);
+        return { ...parking, distance };
+      });
+
+      parkingsWithDistance.sort((a, b) => a.distance - b.distance);
+      const closestTwo = parkingsWithDistance.slice(0, 2);
+
+      displayClosestParkings(closestTwo);
+      showMessage('userMessage', `✅ Success! Found ${closestTwo.length} closest parking(s) to your location.`, 'success');
+    }
+
+    // Manual location entry
+    function findClosestParkingsManual() {
+      if (parkings.length === 0) {
+        showMessage('userMessage', '⚠️ No parkings available. Please contact admin to add parkings first.', 'info');
+        return;
+      }
+
+      const lat = parseFloat(document.getElementById('userLat').value);
+      const lon = parseFloat(document.getElementById('userLon').value);
+
+      if (isNaN(lat) || isNaN(lon)) {
+        showMessage('userMessage', '❌ Please enter valid latitude and longitude values.', 'error');
+        return;
+      }
+
+      if (lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+        showMessage('userMessage', '❌ Invalid coordinate range. Latitude: -90 to 90, Longitude: -180 to 180.', 'error');
+        return;
+      }
+
+      processUserLocation(lat, lon);
+    }
+
+    // ========================================
+    // DISPLAY CLOSEST PARKINGS
+    // ========================================
+    function displayClosestParkings(closestParkings) {
+      const container = document.getElementById('closestParkings');
+      
+      if (closestParkings.length === 0) {
+        container.innerHTML = '<p class="message message-info">No parkings found.</p>';
+        return;
+      }
+
+      container.innerHTML = closestParkings.map((parking, index) => `
+        <div class="closest-parking-item">
+          <h3>${index + 1}. ${parking.name}</h3>
+          <div class="distance">📏 ${parking.distance.toFixed(2)} km away</div>
+          <div class="coords">📍 ${parking.lat.toFixed(4)}, ${parking.lon.toFixed(4)}</div>
+          <p>💰 ${parking.price}</p>
+          <p>📝 ${parking.description}</p>
+          <a href="https://www.google.com/maps/dir/?api=1&origin=${userLocation.lat},${userLocation.lon}&destination=${parking.lat},${parking.lon}&travelmode=driving" 
+             target="_blank" 
+             style="text-decoration: none;">
+            <button class="btn btn-nav">🧭 Navigate with Google Maps</button>
+          </a>
+        </div>
+      `).join('');
+    }
+
+    // ========================================
+    // SHOW MESSAGE
+    // ========================================
+    function showMessage(elementId, message, type) {
+      const messageDiv = document.getElementById(elementId);
+      messageDiv.innerHTML = `<div class="message message-${type}">${message}</div>`;
+      setTimeout(() => { messageDiv.innerHTML = ''; }, 5000);
+    }
+
+    // ========================================
+    // EVENT LISTENERS
+    // ========================================
+    // Wait for DOM to be fully loaded
+    window.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('addParkingBtn').addEventListener('click', () => {
+        const name = document.getElementById('parkingName').value.trim();
+        const lat = document.getElementById('latitude').value;
+        const lon = document.getElementById('longitude').value;
+        const price = document.getElementById('price').value.trim();
+        const description = document.getElementById('description').value.trim();
+
+        if (!name || !lat || !lon) {
+          showMessage('adminMessage', '❌ Please fill in all required fields (Name, Latitude, Longitude)', 'error');
+          return;
+        }
+
+        if (addParking(name, lat, lon, price, description)) {
+          document.getElementById('parkingName').value = '';
+          document.getElementById('latitude').value = '';
+          document.getElementById('longitude').value = '';
+          document.getElementById('price').value = '';
+          document.getElementById('description').value = '';
+        }
+      });
+
+      document.getElementById('resetBtn').addEventListener('click', resetAllParkings);
+      document.getElementById('findClosestBtn').addEventListener('click', findClosestParkings);
+      document.getElementById('manualLocationBtn').addEventListener('click', findClosestParkingsManual);
+    });
+  </script>
+</body>
+</html>
